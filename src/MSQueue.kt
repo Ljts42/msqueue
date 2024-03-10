@@ -1,7 +1,7 @@
 import java.util.concurrent.atomic.*
 
 /**
- * @author TODO: Last Name, First Name
+ * @author Sentemov Lev
  */
 class MSQueue<E> : Queue<E> {
     private val head: AtomicReference<Node<E>>
@@ -14,11 +14,28 @@ class MSQueue<E> : Queue<E> {
     }
 
     override fun enqueue(element: E) {
-        TODO("implement me")
+        val newTail = Node(element)
+        while (true) {
+            val curTail = tail.get()
+            if (curTail.next.compareAndSet(null, newTail)) {
+                tail.compareAndSet(curTail, newTail)
+                return
+            } else {
+                tail.compareAndSet(curTail, curTail.next.get())
+            }
+        }
     }
 
     override fun dequeue(): E? {
-        TODO("implement me")
+        while (true) {
+            val curHead = head.get()
+            val nextHead = curHead.next.get() ?: return null
+            if (head.compareAndSet(curHead, nextHead)) {
+                return nextHead.element.also {
+                    nextHead.element = null
+                }
+            }
+        }
     }
 
     // FOR TEST PURPOSE, DO NOT CHANGE IT.
